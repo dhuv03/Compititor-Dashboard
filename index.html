@@ -331,18 +331,43 @@
   let activeTO = "all";       // threat / opportunity / neutral / all
   let activeCategory = "all";
 
-  async function loadData(){
-    try{
-      const res = await fetch(DASHBOARD_API_URL, { cache: "no-store" });
-      const data = await res.json();
+  // Google Apps Script doesn't reliably send CORS headers, so a plain fetch()
+  // gets blocked by the browser when this page is hosted on a different domain
+  // (e.g. GitHub Pages). JSONP sidesteps that entirely by loading the data via
+  // a <script> tag instead of an XHR/fetch request -- script tags aren't
+  // subject to CORS restrictions.
+  function loadData(){
+    // Clean up any previous attempt that didn't finish
+    const oldScript = document.getElementById("jsonpLoader");
+    if(oldScript) oldScript.remove();
+
+    const callbackName = "__dashboardData_" + Date.now();
+    let timedOut = false;
+
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      document.getElementById("updatedNote").textContent = "Couldn't load data — check API URL";
+      delete window[callbackName];
+    }, 15000);
+
+    window[callbackName] = function(data){
+      if(timedOut) return;
+      clearTimeout(timeout);
       allRecords = Array.isArray(data) ? data : [];
       document.getElementById("updatedNote").textContent =
         "Updated " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
       render();
-    }catch(err){
+      delete window[callbackName];
+    };
+
+    const script = document.createElement("script");
+    script.id = "jsonpLoader";
+    script.src = DASHBOARD_API_URL + "?callback=" + callbackName + "&_=" + Date.now();
+    script.onerror = () => {
+      clearTimeout(timeout);
       document.getElementById("updatedNote").textContent = "Couldn't load data — check API URL";
-      console.error(err);
-    }
+    };
+    document.body.appendChild(script);
   }
 
   function normTO(val){
