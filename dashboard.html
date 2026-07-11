@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioCBG Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F6F4EE;
+    --panel: #FFFFFF;
+    --ink: #22281F;
+    --ink-soft: #5B6156;
+    --forest: #2E4A34;
+    --forest-soft: #E4EBE1;
+    --clay: #A0592E;
+    --clay-soft: #F3E3D5;
+    --threat: #B54834;
+    --threat-soft: #FBE8E2;
+    --opportunity: #3E7A4E;
+    --opportunity-soft: #E3F0E4;
+    --neutral: #8A8577;
+    --neutral-soft: #EFEDE5;
+    --line: #E4E1D6;
+    --shadow: 0 1px 2px rgba(34,40,31,0.04), 0 4px 16px rgba(34,40,31,0.05);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .layout{ display:flex; min-height:100vh; }
+
+  /* Sidebar */
+  .sidebar{
+    width:250px;
+    flex-shrink:0;
+    background:var(--panel);
+    border-right:1px solid var(--line);
+    padding:28px 20px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .brand{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:1.05rem;
+    color:var(--forest);
+    letter-spacing:-0.01em;
+    margin-bottom:4px;
+  }
+  .brand-sub{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin-bottom:28px;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+  }
+  .live-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.72rem;
+    font-weight:600;
+    color:var(--forest);
+    background:var(--forest-soft);
+    padding:5px 10px;
+    border-radius:20px;
+    margin-bottom:26px;
+  }
+  .live-dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--forest);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(46,74,52,0.4); }
+    70%{ box-shadow:0 0 0 6px rgba(46,74,52,0); }
+    100%{ box-shadow:0 0 0 0 rgba(46,74,52,0); }
+  }
+  .nav-label{
+    font-size:0.68rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin:22px 0 10px;
+  }
+  .nav-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:0.87rem;
+    font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+    margin-bottom:2px;
+    transition:background 0.15s;
+  }
+  .nav-item:hover{ background:var(--bg); }
+  .nav-item.active{ background:var(--forest-soft); color:var(--forest); font-weight:600; }
+  .nav-count{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    background:var(--bg);
+    padding:1px 7px;
+    border-radius:10px;
+  }
+  .nav-item.active .nav-count{ background:#fff; color:var(--forest); }
+
+  /* Main */
+  .main{ flex:1; padding:32px 40px; max-width:1200px; }
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-bottom:24px;
+  }
+  h1{
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:1.5rem;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{ color:var(--ink-soft); font-size:0.88rem; margin-top:4px; }
+  .updated-note{ font-size:0.78rem; color:var(--ink-soft); text-align:right; }
+
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:26px;
+  }
+  .stat-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 18px;
+    box-shadow:var(--shadow);
+  }
+  .stat-num{ font-family:'Sora',sans-serif; font-weight:700; font-size:1.5rem; }
+  .stat-label{ font-size:0.76rem; color:var(--ink-soft); margin-top:2px; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .search-box{
+    flex:1;
+    min-width:220px;
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font-family:'Inter',sans-serif;
+    font-size:0.87rem;
+    background:var(--panel);
+  }
+  .search-box:focus{ outline:none; border-color:var(--forest); }
+  select{
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:var(--panel);
+    font-family:'Inter',sans-serif;
+    font-size:0.85rem;
+    color:var(--ink);
+  }
+
+  .card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--neutral);
+    border-radius:12px;
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .card.threat{ border-left-color:var(--threat); }
+  .card.opportunity{ border-left-color:var(--opportunity); }
+
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .badge{
+    font-size:0.68rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    padding:3px 9px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .badge.threat{ background:var(--threat-soft); color:var(--threat); }
+  .badge.opportunity{ background:var(--opportunity-soft); color:var(--opportunity); }
+  .badge.neutral{ background:var(--neutral-soft); color:var(--neutral); }
+  .card-date{ font-size:0.75rem; color:var(--ink-soft); white-space:nowrap; }
+
+  .card-title{
+    font-family:'Sora',sans-serif;
+    font-weight:600;
+    font-size:0.98rem;
+    line-height:1.35;
+  }
+  .card-summary{
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+  .card-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:2px;
+  }
+  .tag{
+    font-size:0.72rem;
+    color:var(--clay);
+    background:var(--clay-soft);
+    padding:3px 9px;
+    border-radius:6px;
+  }
+  .tag.entity{ color:var(--forest); background:var(--forest-soft); }
+  .card-note{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    font-style:italic;
+    border-top:1px solid var(--line);
+    padding-top:8px;
+    margin-top:2px;
+  }
+  .card-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:4px;
+  }
+  .card-source{ font-size:0.76rem; color:var(--ink-soft); }
+  .card-link{
+    font-size:0.8rem;
+    font-weight:600;
+    color:var(--forest);
+    text-decoration:none;
+  }
+  .card-link:hover{ text-decoration:underline; }
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-state h3{ font-family:'Sora',sans-serif; color:var(--ink); margin-bottom:6px; }
+
+  @media (max-width: 860px){
+    .layout{ flex-direction:column; }
+    .sidebar{ width:100%; height:auto; position:relative; }
+    .stats-row{ grid-template-columns:repeat(2,1fr); }
+    .main{ padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">BioCBG Intel</div>
+    <div class="brand-sub">Field Tracker · Biofics</div>
+    <div class="live-pill"><span class="live-dot"></span>Live feed</div>
+
+    <div class="nav-label">Threat / Opportunity</div>
+    <div id="toNav"></div>
+
+    <div class="nav-label">Category</div>
+    <div id="categoryNav"></div>
+  </aside>
+
+  <main class="main">
+    <div class="top-row">
+      <div>
+        <h1>Competitor & Market Intelligence</h1>
+        <div class="subtitle">CBG, biogas & organic fertilizer — India</div>
+      </div>
+      <div class="updated-note" id="updatedNote">Loading...</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="statTotal">–</div><div class="stat-label">Total items</div></div>
+      <div class="stat-card"><div class="stat-num" id="statThreat">–</div><div class="stat-label">Threats</div></div>
+      <div class="stat-card"><div class="stat-num" id="statOpp">–</div><div class="stat-label">Opportunities</div></div>
+      <div class="stat-card"><div class="stat-num" id="statWeek">–</div><div class="stat-label">This week</div></div>
+    </div>
+
+    <div class="controls">
+      <input class="search-box" id="searchBox" placeholder="Search titles, entities, summaries...">
+      <select id="sortSelect">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+      </select>
+    </div>
+
+    <div class="card-grid" id="cardGrid"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <h3>No matching articles</h3>
+      <div>Try clearing your filters or search term.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ⚠️ Paste your Apps Script Web App URL here (see Code.gs setup instructions)
+  const DASHBOARD_API_URL = "https://script.google.com/macros/s/AKfycbzhJf-433Q8NnoeOsAQ0ep07Ba2mIHjhLUpGJUUZoJYRer8riJUQpbqocxcpRx3mFrRoA/exec";
+
+  const REFRESH_INTERVAL_MS = 2 * 60 * 1000; // auto-refresh every 2 minutes
+
+  let allRecords = [];
+  let activeTO = "all";       // threat / opportunity / neutral / all
+  let activeCategory = "all";
+
+  async function loadData(){
+    try{
+      const res = await fetch(DASHBOARD_API_URL, { cache: "no-store" });
+      const data = await res.json();
+      allRecords = Array.isArray(data) ? data : [];
+      document.getElementById("updatedNote").textContent =
+        "Updated " + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      render();
+    }catch(err){
+      document.getElementById("updatedNote").textContent = "Couldn't load data — check API URL";
+      console.error(err);
+    }
+  }
+
+  function normTO(val){
+    const v = (val || "").toLowerCase();
+    if(v.startsWith("threat")) return "threat";
+    if(v.startsWith("opport")) return "opportunity";
+    return "neutral";
+  }
+
+  function buildNav(){
+    // Threat/Opportunity nav
+    const toCounts = { threat:0, opportunity:0, neutral:0 };
+    allRecords.forEach(r => toCounts[normTO(r.threatOpportunity)]++);
+    const toNav = document.getElementById("toNav");
+    const toItems = [
+      { key:"all", label:"All items", count: allRecords.length },
+      { key:"threat", label:"Threats", count: toCounts.threat },
+      { key:"opportunity", label:"Opportunities", count: toCounts.opportunity },
+      { key:"neutral", label:"Neutral", count: toCounts.neutral },
+    ];
+    toNav.innerHTML = toItems.map(item => `
+      <div class="nav-item ${activeTO===item.key?'active':''}" onclick="setTO('${item.key}')">
+        <span>${item.label}</span><span class="nav-count">${item.count}</span>
+      </div>`).join("");
+
+    // Category nav
+    const catCounts = {};
+    allRecords.forEach(r => {
+      const c = r.category || "Other";
+      catCounts[c] = (catCounts[c]||0) + 1;
+    });
+    const categoryNav = document.getElementById("categoryNav");
+    const cats = [{key:"all", label:"All categories", count: allRecords.length}]
+      .concat(Object.keys(catCounts).sort().map(c => ({key:c, label:c, count:catCounts[c]})));
+    categoryNav.innerHTML = cats.map(item => `
+      <div class="nav-item ${activeCategory===item.key?'active':''}" onclick="setCategory('${item.key.replace(/'/g,"\\'")}')">
+        <span>${item.label}</span><span class="nav-count">${item.count}</span>
+      </div>`).join("");
+  }
+
+  function setTO(key){ activeTO = key; render(); }
+  function setCategory(key){ activeCategory = key; render(); }
+  window.setTO = setTO;
+  window.setCategory = setCategory;
+
+  function updateStats(filtered){
+    document.getElementById("statTotal").textContent = allRecords.length;
+    document.getElementById("statThreat").textContent = allRecords.filter(r=>normTO(r.threatOpportunity)==="threat").length;
+    document.getElementById("statOpp").textContent = allRecords.filter(r=>normTO(r.threatOpportunity)==="opportunity").length;
+    const weekAgo = Date.now() - 7*24*60*60*1000;
+    document.getElementById("statWeek").textContent = allRecords.filter(r=>{
+      const d = new Date(r.date);
+      return !isNaN(d) && d.getTime() >= weekAgo;
+    }).length;
+  }
+
+  function render(){
+    buildNav();
+    const search = document.getElementById("searchBox").value.trim().toLowerCase();
+    const sortMode = document.getElementById("sortSelect").value;
+
+    let filtered = allRecords.filter(r => {
+      if(activeTO !== "all" && normTO(r.threatOpportunity) !== activeTO) return false;
+      if(activeCategory !== "all" && (r.category||"Other") !== activeCategory) return false;
+      if(search){
+        const hay = [r.title, r.summary, r.relatedEntity, r.sourceName].join(" ").toLowerCase();
+        if(!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    filtered.sort((a,b) => {
+      const da = new Date(a.date), db = new Date(b.date);
+      return sortMode === "date-asc" ? da - db : db - da;
+    });
+
+    updateStats(filtered);
+
+    const grid = document.getElementById("cardGrid");
+    const empty = document.getElementById("emptyState");
+    if(filtered.length === 0){
+      grid.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    grid.innerHTML = filtered.map(r => {
+      const to = normTO(r.threatOpportunity);
+      const dateLabel = r.date ? new Date(r.date).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : "";
+      return `
+        <div class="card ${to}">
+          <div class="card-top">
+            <span class="badge ${to}">${to}</span>
+            <span class="card-date">${dateLabel}</span>
+          </div>
+          <div class="card-title">${escapeHtml(r.title || "Untitled")}</div>
+          <div class="card-summary">${escapeHtml(r.summary || "")}</div>
+          <div class="card-meta">
+            ${r.category ? `<span class="tag">${escapeHtml(r.category)}</span>` : ""}
+            ${r.relatedEntity ? `<span class="tag entity">${escapeHtml(r.relatedEntity)}</span>` : ""}
+          </div>
+          ${r.notes ? `<div class="card-note">${escapeHtml(r.notes)}</div>` : ""}
+          <div class="card-footer">
+            <span class="card-source">${escapeHtml(r.sourceName || "")}</span>
+            ${r.sourceLink && r.sourceLink !== "Not available" ? `<a class="card-link" href="${escapeHtml(r.sourceLink)}" target="_blank" rel="noopener">Read source →</a>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+
+  document.getElementById("searchBox").addEventListener("input", render);
+  document.getElementById("sortSelect").addEventListener("change", render);
+
+  loadData();
+  setInterval(loadData, REFRESH_INTERVAL_MS);
+</script>
+
+</body>
+</html>
